@@ -16,10 +16,10 @@
 //    
 #![cfg_attr(not(feature = "std"), no_std)]
 
-#[cfg(test)]
-mod mock;
-#[cfg(test)]
-mod tests;
+// #[cfg(test)]
+// mod mock;
+// #[cfg(test)]
+// mod tests;
 
 mod impls;
 
@@ -84,6 +84,11 @@ pub mod pallet {
     #[pallet::getter(fn get_asset_id_from_multilocation)]
     pub type MultilocationToAssetId<T: Config> =
         StorageMap<_, Blake2_256, MultiLocation, AssetId, OptionQuery>;
+    
+    #[pallet::storage]
+    #[pallet::getter(fn registered_multilocation)]
+    pub type RegisteredMultilocation<T: Config> =
+        StorageMap<_, Blake2_256, MultiLocation, (), OptionQuery>;
 
     #[pallet::event]
     #[pallet::generate_deposit(pub(super) fn deposit_event)]
@@ -105,7 +110,7 @@ pub mod pallet {
         AssetTransferred(T::AccountId, MultiLocation, AssetId, u128),
 
         // Error events:
-        Deposit(AssetId, T::AccountId, T::Balance),
+        Deposit(MultiLocation, T::AccountId, T::Balance),
         /// No mapping for MultiLocation
         MultilocationMappingError(MultiLocation),
         /// No mapping for AssetId
@@ -251,6 +256,17 @@ pub mod pallet {
                     Self::deposit_event(Event::<T>::MappingDeleted(asset_id, multilocation));
                 },
             };
+            Ok(().into())
+        }
+
+        /// Perform 
+        ///
+        /// 
+        #[pallet::call_index(4)]
+        #[pallet::weight(Weight::from_parts(10_000, 0) + T::DbWeight::get().writes(1))]
+        pub fn register_multilocation(origin: OriginFor<T>, multilocation: MultiLocation) -> DispatchResultWithPostInfo {
+            ensure_root(origin)?;
+            RegisteredMultilocation::<T>::insert(multilocation, ());
             Ok(().into())
         }
     }

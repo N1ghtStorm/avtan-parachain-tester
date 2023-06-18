@@ -20,7 +20,7 @@ use frame_support::fail;
 
 // IMPLS
 impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
-    type CurrencyId = AssetId;
+    type CurrencyId = MultiLocation;
     type Balance = T::Balance;
 
     fn minimum_balance(_currency_id: Self::CurrencyId) -> Self::Balance {
@@ -144,6 +144,28 @@ impl<T: Config> sp_runtime::traits::Convert<MultiLocation, Option<AssetId>> for 
 
 impl<T: Config> sp_runtime::traits::Convert<MultiAsset, Option<AssetId>> for Pallet<T> {
     fn convert(ma: MultiAsset) -> Option<AssetId> {
+        if let MultiAsset { fun: Fungible(_), id: Concrete(ml) } = ma {
+            Self::convert(ml)
+        } else {
+            Self::deposit_event(Event::<T>::MultiAssetMappingError(ma));
+            Option::None
+        }
+    }
+}
+
+// IMPLS for p_runtime::traits::Convert trait to allow this pallet be used as Converter in XCM localasset transactor:
+impl<T: Config> sp_runtime::traits::Convert<MultiLocation, Option<MultiLocation>> for Pallet<T> {
+    fn convert(id: MultiLocation) -> Option<MultiLocation> {
+        if Pallet::<T>::registered_multilocation(id).is_some() {
+            Some(id)
+        } else {
+            None
+        }
+    }
+}
+
+impl<T: Config> sp_runtime::traits::Convert<MultiAsset, Option<MultiLocation>> for Pallet<T> {
+    fn convert(ma: MultiAsset) -> Option<MultiLocation> {
         if let MultiAsset { fun: Fungible(_), id: Concrete(ml) } = ma {
             Self::convert(ml)
         } else {
