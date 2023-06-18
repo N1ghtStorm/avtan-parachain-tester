@@ -1,38 +1,23 @@
-// This file is part of the SORA network and Polkaswap app.
-
-// Copyright (c) 2020, 2021, Polka Biome Ltd. All rights reserved.
-// SPDX-License-Identifier: BSD-4-Clause
-
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-
-// Redistributions of source code must retain the above copyright notice, this list
-// of conditions and the following disclaimer.
-// Redistributions in binary form must reproduce the above copyright notice, this
-// list of conditions and the following disclaimer in the documentation and/or other
-// materials provided with the distribution.
-//
-// All advertising materials mentioning features or use of this software must display
-// the following acknowledgement: This product includes software developed by Polka Biome
-// Ltd., SORA, and Polkaswap.
-//
-// Neither the name of the Polka Biome Ltd. nor the names of its contributors may be used
-// to endorse or promote products derived from this software without specific prior written permission.
-
-// THIS SOFTWARE IS PROVIDED BY Polka Biome Ltd. AS IS AND ANY EXPRESS OR IMPLIED WARRANTIES,
-// INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL Polka Biome Ltd. BE LIABLE FOR ANY
-// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
-// OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-// STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//                                                   ~-.
+//                                                   ,,,;            ~-.~-.~-
+//                                               (.../           ~-.~-.~-.~-.~-.
+//                                           < } O~`, ,        ~-.~-.~-.~-.~-.~-.
+//                                               (/    T ,     ~-.~-.~-.~-.~-.~-.~-.
+//                                                   ;    T     ~-.~-.~-.~-.~-.~-.~-.
+//                                                 ;   {_.~-.~-.~-.~-.~-.~-.~
+//                                               ;:  .-~`    ~-.~-.~-.~-.~-.
+//                                               ;.: :'    ._   ~-.~-.~-.~-.~-
+//                                               ;::`-.    '-._  ~-.~-.~-.~-
+//                                               ;::. `-.    '-,~-.~-.~-.
+//                                                   ';::::.`''-.-'
+//                                                   ';::;;:,:'
+//                                                       '||T
+//                                                     __   _
+//    
 #![cfg_attr(not(feature = "std"), no_std)]
 
-// #[cfg(feature = "runtime-benchmarks")]
-// mod benchmarking;
-// #[cfg(test)]
-// mod mock;
+#[cfg(test)]
+mod mock;
 // #[cfg(test)]
 // mod tests;
 
@@ -41,13 +26,8 @@ mod impls;
 // pub mod weights;
 
 pub use pallet::*;
-
-// use bridge_types::substrate::XCMAppCall;
 use frame_support::weights::Weight;
-use orml_traits::xcm_transfer::XcmTransfer;
 use orml_traits::MultiCurrency;
-// use parachain_common::primitives::AssetId;
-use sp_runtime::AccountId32;
 use xcm::{
     opaque::latest::{AssetId::Concrete, Fungibility::Fungible},
     v3::{MultiAsset, MultiLocation},
@@ -55,48 +35,11 @@ use xcm::{
 
 pub type ParachainAssetId = xcm::VersionedMultiAsset;
 
-pub trait WeightInfo {
-    fn register_mapping() -> Weight;
-
-    fn change_asset_mapping() -> Weight;
-
-    fn change_multilocation_mapping() -> Weight;
-
-    fn delete_mapping() -> Weight;
-
-    fn transfer() -> Weight;
-
-    fn register_asset() -> Weight;
-}
-
-// impl<T: Config> From<XCMAppCall> for Call<T>
-// where
-//     T::AccountId: From<AccountId32>,
-// {
-//     fn from(value: XCMAppCall) -> Self {
-//         match value {
-//             XCMAppCall::Transfer { sender, recipient, amount, asset_id } => {
-//                 Call::transfer { sender: sender.into(), recipient, amount, asset_id }
-//             },
-//             XCMAppCall::RegisterAsset { asset_id, sidechain_asset, asset_kind } => {
-//                 Call::register_asset { asset_id, multiasset: sidechain_asset, asset_kind }
-//             },
-//         }
-//     }
-// }
-
 #[frame_support::pallet]
 pub mod pallet {
     use super::*;
-    // use bridge_types::{
-    //     substrate::{SubstrateAppCall, SubstrateBridgeMessageEncode},
-    //     traits::OutboundChannel,
-    //     SubNetworkId, H256,
-    // };
     use frame_support::{dispatch::DispatchResultWithPostInfo, fail, pallet_prelude::*};
-    use frame_system::{pallet_prelude::*, RawOrigin};
-    // use parachain_common::primitives::AssetId;
-    use sp_runtime::traits::Convert;
+    use frame_system::pallet_prelude::*;
 
     pub type AssetId = [u8; 32];
 
@@ -132,7 +75,6 @@ pub mod pallet {
     }
 
     #[pallet::pallet]
-    #[pallet::generate_store(pub(super) trait Store)]
     #[pallet::without_storage_info]
     pub struct Pallet<T>(_);
 
@@ -166,10 +108,7 @@ pub mod pallet {
         AssetTransferred(T::AccountId, MultiLocation, AssetId, u128),
 
         // Error events:
-        /// Error while submitting to outbound channel
-        SubmittingToChannelError(DispatchError, AssetId),
-        /// Error while trasferring XCM message to other chains
-        TrasferringAssetError(DispatchError, AssetId),
+        Deposit(AssetId, T::AccountId, T::Balance),
         /// No mapping for MultiLocation
         MultilocationMappingError(MultiLocation),
         /// No mapping for AssetId
@@ -216,6 +155,7 @@ pub mod pallet {
             );
             AssetIdToMultilocation::<T>::insert(asset_id, multilocation.clone());
             MultilocationToAssetId::<T>::insert(multilocation.clone(), asset_id);
+            Self::deposit_event(Event::<T>::MappingCreated(asset_id, multilocation));
             Ok(().into())
         }
 
