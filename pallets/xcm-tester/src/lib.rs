@@ -269,6 +269,17 @@ pub mod pallet {
             RegisteredMultilocation::<T>::insert(multilocation, ());
             Ok(().into())
         }
+
+        /// Perform 
+        /// 
+        /// 
+        #[pallet::call_index(5)]
+        #[pallet::weight(Weight::from_parts(10_000, 0) + T::DbWeight::get().writes(1))]
+        pub fn delete_multilocation(origin: OriginFor<T>, multilocation: MultiLocation) -> DispatchResultWithPostInfo {
+            ensure_root(origin)?;
+            RegisteredMultilocation::<T>::remove(multilocation);
+            Ok(().into())
+        }
     }
 
     impl<T: Config> Pallet<T> {}
