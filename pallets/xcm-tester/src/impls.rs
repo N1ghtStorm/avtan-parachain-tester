@@ -122,7 +122,6 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 }
 
 // IMPLS for p_runtime::traits::Convert trait to allow this pallet be used as Converter in XCM localasset transactor:
-
 impl<T: Config> sp_runtime::traits::Convert<AssetId, Option<MultiLocation>> for Pallet<T> {
     fn convert(id: AssetId) -> Option<MultiLocation> {
         let maybe_multilocation = Pallet::<T>::get_multilocation_from_asset_id(id);

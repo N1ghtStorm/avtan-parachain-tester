@@ -18,12 +18,10 @@
 
 #[cfg(test)]
 mod mock;
-// #[cfg(test)]
-// mod tests;
+#[cfg(test)]
+mod tests;
 
 mod impls;
-
-// pub mod weights;
 
 pub use pallet::*;
 use frame_support::weights::Weight;
@@ -34,14 +32,13 @@ use xcm::{
 };
 
 pub type ParachainAssetId = xcm::VersionedMultiAsset;
+pub type AssetId = [u8; 32];
 
 #[frame_support::pallet]
 pub mod pallet {
     use super::*;
     use frame_support::{dispatch::DispatchResultWithPostInfo, fail, pallet_prelude::*};
     use frame_system::pallet_prelude::*;
-
-    pub type AssetId = [u8; 32];
 
     #[pallet::config]
     pub trait Config: frame_system::Config {

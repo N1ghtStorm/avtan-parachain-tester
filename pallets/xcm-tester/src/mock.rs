@@ -16,17 +16,13 @@
 //    
 
 use crate as transactor;
-// use bridge_types::{traits::OutboundChannel, SubNetworkId};
 use frame_support::{parameter_types, traits::Everything};
 use frame_system as system;
-// use orml_traits::XcmTransfer;
-// use parachain_common::primitives::AssetId;
 use sp_core::H256;
 use sp_runtime::{
     testing::Header,
     traits::{BlakeTwo256, IdentityLookup},
 };
-use xcm::latest::prelude::*;
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
@@ -80,14 +76,7 @@ impl system::Config for Test {
 
 impl transactor::Config for Test {
     type RuntimeEvent = RuntimeEvent;
-    // type WeightInfo = ();
     type Balance = Balance;
-    // type OutboundChannel = TestOutboundChannel;
-    // type AccountIdToMultiLocation = TestAccountIdToMultiLocation;
-    // type XcmTransfer = TestXcmTransfer;
-    // type CallOrigin = TestCallOrigin;
-    // type AccountIdConverter = TestAccountIdConverter;
-    // type BalanceConverter = ();
 }
 
 pub struct TestAccountIdConverter;
@@ -106,132 +95,3 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 pub fn test_general_key() -> [u8; 32] {
     [3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3]
 }
-
-// pub struct TestOutboundChannel;
-// impl OutboundChannel<SubNetworkId, AccountId, ()> for TestOutboundChannel {
-//     fn submit(
-//         _network_id: SubNetworkId,
-//         _who: &system::RawOrigin<AccountId>,
-//         _payload: &[u8],
-//         _additional: (),
-//     ) -> Result<H256, sp_runtime::DispatchError> {
-//         Ok([
-//             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-//             1, 1, 1,
-//         ]
-//         .into())
-//     }
-// }
-
-// pub struct TestAccountIdToMultiLocation;
-// impl sp_runtime::traits::Convert<AccountId, MultiLocation> for TestAccountIdToMultiLocation {
-//     fn convert(account: AccountId) -> MultiLocation {
-//         let arr: [u8; 16] = account.to_be_bytes();
-//         let arrarr: [u8; 32] = [arr, arr]
-//             .concat()
-//             .try_into()
-//             .expect("Failed to convert account if to xcm multilocaton");
-//         X1(AccountId32 { network: Some(xcm::v3::NetworkId::Rococo), id: arrarr.into() }).into()
-//     }
-// }
-
-// pub struct TestXcmTransfer;
-// impl XcmTransfer<AccountId, Balance, AssetId> for TestXcmTransfer {
-//     fn transfer_multiasset(
-//         sender: AccountId,
-//         _asset: MultiAsset,
-//         dest: MultiLocation,
-//         _dest_weight_limit: WeightLimit,
-//     ) -> Result<orml_traits::xcm_transfer::Transferred<AccountId>, sp_runtime::DispatchError> {
-//         Ok(orml_traits::xcm_transfer::Transferred {
-//             sender,
-//             dest,
-//             assets: vec![].into(),
-//             fee: MultiAsset { id: Concrete(dest), fun: Fungible(0) },
-//         })
-//     }
-
-//     fn transfer_with_fee(
-//         sender: AccountId,
-//         _currency_id: AssetId,
-//         _amount: Balance,
-//         _fee: Balance,
-//         dest: MultiLocation,
-//         _dest_weight_limit: WeightLimit,
-//     ) -> Result<orml_traits::xcm_transfer::Transferred<AccountId>, sp_runtime::DispatchError> {
-//         Ok(orml_traits::xcm_transfer::Transferred {
-//             sender,
-//             dest,
-//             assets: vec![].into(),
-//             fee: MultiAsset { id: Concrete(dest), fun: Fungible(0) },
-//         })
-//     }
-
-//     fn transfer_multiasset_with_fee(
-//         sender: AccountId,
-//         _asset: MultiAsset,
-//         fee: MultiAsset,
-//         dest: MultiLocation,
-//         _dest_weight_limit: WeightLimit,
-//     ) -> Result<orml_traits::xcm_transfer::Transferred<AccountId>, sp_runtime::DispatchError> {
-//         Ok(orml_traits::xcm_transfer::Transferred { sender, dest, assets: vec![].into(), fee })
-//     }
-
-//     fn transfer_multicurrencies(
-//         sender: AccountId,
-//         _currencies: Vec<(AssetId, Balance)>,
-//         _fee_item: u32,
-//         dest: MultiLocation,
-//         _dest_weight_limit: WeightLimit,
-//     ) -> Result<orml_traits::xcm_transfer::Transferred<AccountId>, sp_runtime::DispatchError> {
-//         Ok(orml_traits::xcm_transfer::Transferred {
-//             sender,
-//             dest,
-//             assets: vec![].into(),
-//             fee: MultiAsset { id: Concrete(dest), fun: Fungible(0) },
-//         })
-//     }
-
-//     fn transfer_multiassets(
-//         sender: AccountId,
-//         assets: MultiAssets,
-//         fee: MultiAsset,
-//         dest: MultiLocation,
-//         _dest_weight_limit: WeightLimit,
-//     ) -> Result<orml_traits::xcm_transfer::Transferred<AccountId>, sp_runtime::DispatchError> {
-//         Ok(orml_traits::xcm_transfer::Transferred { sender, dest, assets, fee })
-//     }
-
-//     fn transfer(
-//         sender: AccountId,
-//         _currency_id: AssetId,
-//         _amount: Balance,
-//         dest: MultiLocation,
-//         _dest_weight_limit: WeightLimit,
-//     ) -> Result<orml_traits::xcm_transfer::Transferred<AccountId>, sp_runtime::DispatchError> {
-//         Ok(orml_traits::xcm_transfer::Transferred {
-//             sender,
-//             dest,
-//             assets: vec![].into(),
-//             fee: MultiAsset { id: Concrete(dest), fun: Fungible(0) },
-//         })
-//     }
-// }
-
-// pub struct TestCallOrigin;
-// impl<OuterOrigin> frame_support::traits::EnsureOrigin<OuterOrigin> for TestCallOrigin {
-//     type Success = bridge_types::types::CallOriginOutput<SubNetworkId, H256, ()>;
-
-//     fn try_origin(_o: OuterOrigin) -> Result<Self::Success, OuterOrigin> {
-//         Ok(bridge_types::types::CallOriginOutput {
-//             network_id: SubNetworkId::Mainnet,
-//             message_id: [
-//                 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-//                 1, 1, 1, 1,
-//             ]
-//             .into(),
-//             timepoint: bridge_types::GenericTimepoint::Sora(1),
-//             additional: (),
-//         })
-//     }
-// }

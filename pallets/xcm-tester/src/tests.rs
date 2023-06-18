@@ -15,8 +15,7 @@
 //                                                     __   _
 //    
 
-use crate::{mock::*, Error};
-// use bridge_types::{types::AssetKind, H256};
+use crate::{mock::*, Error, AssetId};
 use frame_support::{assert_noop, assert_ok};
 use xcm::{
     opaque::latest::{
@@ -38,9 +37,9 @@ fn it_works_register_change_delete() {
         };
 
         // Create:
-        assert_ok!(Transactor::register_mapping(asset_id, multilocation.clone()));
+        assert_ok!(Transactor::register_mapping(RuntimeOrigin::root(), asset_id, multilocation.clone()));
         assert_eq!(
-            Transactor::get_multilocation_from_asset_id::<H256>(asset_id.into())
+            Transactor::get_multilocation_from_asset_id::<AssetId>(asset_id.into())
                 .expect("it_works_register_change_delete, Create: multilocation is None"),
             multilocation.clone()
         );
@@ -51,7 +50,7 @@ fn it_works_register_change_delete() {
         );
 
         // Change Asset's Multilocation:
-        assert_ok!(Transactor::change_asset_mapping(asset_id, new_multilocation.clone()));
+        assert_ok!(Transactor::change_asset_mapping(RuntimeOrigin::root(), asset_id, new_multilocation.clone()));
         assert_eq!(
 			Transactor::get_multilocation_from_asset_id(asset_id)
 				.expect("it_works_register_change_delete, Change Asset's Multilocation: new_multilocation is None"),
@@ -66,7 +65,7 @@ fn it_works_register_change_delete() {
         assert_eq!(Transactor::get_asset_id_from_multilocation(multilocation.clone()), None);
 
         // Change Multilocation's Asset
-        assert_ok!(Transactor::change_multilocation_mapping(new_multilocation.clone(), new_asset_id,));
+        assert_ok!(Transactor::change_multilocation_mapping(RuntimeOrigin::root(), new_multilocation.clone(), new_asset_id,));
         assert_eq!(
 			Transactor::get_multilocation_from_asset_id(new_asset_id)
 				.expect("it_works_register_change_delete, Change Multilocation's Asset: new_multilocation is None"),
@@ -81,7 +80,7 @@ fn it_works_register_change_delete() {
         assert_eq!(Transactor::get_multilocation_from_asset_id(asset_id), None);
 
         // Delete:
-        assert_ok!(Transactor::delete_mapping(new_asset_id));
+        assert_ok!(Transactor::delete_mapping(RuntimeOrigin::root(), new_asset_id));
         assert_eq!(Transactor::get_multilocation_from_asset_id(new_asset_id), None);
         assert_eq!(Transactor::get_asset_id_from_multilocation(new_multilocation), None);
     });
@@ -97,14 +96,14 @@ fn it_fails_create_existing_multilocation_mapping() {
             interior: X2(Parachain(666), GeneralKey { length: 6, data: test_general_key() }),
         };
 
-        assert_ok!(Transactor::register_mapping(asset_id, multilocation.clone()));
+        assert_ok!(Transactor::register_mapping(RuntimeOrigin::root(), asset_id, multilocation.clone()));
 
         assert_noop!(
-            Transactor::register_mapping(asset_id, multilocation.clone()),
+            Transactor::register_mapping(RuntimeOrigin::root(), asset_id, multilocation.clone()),
             Error::<Test>::MappingAlreadyExists
         );
         assert_noop!(
-            Transactor::register_mapping(asset_id, new_multilocation.clone()),
+            Transactor::register_mapping(RuntimeOrigin::root(), asset_id, new_multilocation.clone()),
             Error::<Test>::MappingAlreadyExists
         );
     });
@@ -117,14 +116,14 @@ fn it_fails_create_existing_asset_id_mapping() {
         let new_asset_id = [2; 32].into();
         let multilocation = MultiLocation::parent();
 
-        assert_ok!(Transactor::register_mapping(asset_id, multilocation.clone()));
+        assert_ok!(Transactor::register_mapping(RuntimeOrigin::root(), asset_id, multilocation.clone()));
 
         assert_noop!(
-            Transactor::register_mapping(asset_id, multilocation.clone()),
+            Transactor::register_mapping(RuntimeOrigin::root(), asset_id, multilocation.clone()),
             Error::<Test>::MappingAlreadyExists
         );
         assert_noop!(
-            Transactor::register_mapping(new_asset_id, multilocation.clone()),
+            Transactor::register_mapping(RuntimeOrigin::root(), new_asset_id, multilocation.clone()),
             Error::<Test>::MappingAlreadyExists
         );
     });
@@ -138,13 +137,13 @@ fn it_fails_change_asset_non_existing_mapping() {
         let multilocation = MultiLocation::parent();
 
         assert_noop!(
-            Transactor::change_asset_mapping(asset_id, multilocation.clone()),
+            Transactor::change_asset_mapping(RuntimeOrigin::root(), asset_id, multilocation.clone()),
             Error::<Test>::MappingNotExist
         );
 
-        assert_ok!(Transactor::register_mapping(new_asset_id, multilocation.clone()));
+        assert_ok!(Transactor::register_mapping(RuntimeOrigin::root(), new_asset_id, multilocation.clone()));
         assert_noop!(
-            Transactor::change_asset_mapping(asset_id, multilocation.clone()),
+            Transactor::change_asset_mapping(RuntimeOrigin::root(), asset_id, multilocation.clone()),
             Error::<Test>::MappingNotExist
         );
         assert_eq!(
@@ -166,13 +165,13 @@ fn it_fails_change_multilocation_non_existing_mapping() {
         };
 
         assert_noop!(
-            Transactor::change_asset_mapping(asset_id, multilocation.clone()),
+            Transactor::change_asset_mapping(RuntimeOrigin::root(), asset_id, multilocation.clone()),
             Error::<Test>::MappingNotExist
         );
 
-        assert_ok!(Transactor::register_mapping(asset_id, new_multilocation.clone()));
+        assert_ok!(Transactor::register_mapping(RuntimeOrigin::root(), asset_id, new_multilocation.clone()));
         assert_noop!(
-            Transactor::change_multilocation_mapping(multilocation.clone(), asset_id),
+            Transactor::change_multilocation_mapping(RuntimeOrigin::root(), multilocation.clone(), asset_id),
             Error::<Test>::MappingNotExist
         );
         assert_eq!(
@@ -187,53 +186,6 @@ fn it_fails_change_multilocation_non_existing_mapping() {
 fn it_fails_delete_mapping_non_existing_mapping() {
     new_test_ext().execute_with(|| {
         let asset_id = [1; 32].into();
-        assert_noop!(Transactor::delete_mapping(asset_id), Error::<Test>::MappingNotExist);
-    });
-}
-
-#[test]
-fn it_works_register_asset() {
-    new_test_ext().execute_with(|| {
-        let asset_id = [1; 32].into();
-        let multiasset = MultiLocation {
-            parents: 1,
-            interior: X2(Parachain(666), GeneralKey { length: 6, data: test_general_key() }),
-        };
-        assert_ok!(Transactor::register_asset(
-            RuntimeOrigin::root(),
-            asset_id,
-            multiasset.clone().into(),
-            AssetKind::Sidechain,
-        ));
-        assert_eq!(
-            Transactor::get_multilocation_from_asset_id::<H256>(asset_id.into())
-                .expect("it_works_register_asset, Create: multilocation is None"),
-            multiasset.clone()
-        );
-        assert_eq!(
-            Transactor::get_asset_id_from_multilocation(multiasset.clone())
-                .expect("it_works_register_asset, Create: asset id is None"),
-            asset_id
-        );
-        let new_asset_id = [2; 32].into();
-        assert_noop!(
-            Transactor::register_asset(
-                RuntimeOrigin::root(),
-                new_asset_id,
-                multiasset.clone().into(),
-                AssetKind::Sidechain,
-            ),
-            Error::<Test>::MappingAlreadyExists
-        );
-        assert_eq!(
-            Transactor::get_multilocation_from_asset_id::<H256>(asset_id.into())
-                .expect("it_works_register_asset, Create: multilocation is None"),
-            multiasset.clone()
-        );
-        assert_eq!(
-            Transactor::get_asset_id_from_multilocation(multiasset)
-                .expect("it_works_register_asset, Create: asset id is None"),
-            asset_id
-        );
+        assert_noop!(Transactor::delete_mapping(RuntimeOrigin::root(), asset_id), Error::<Test>::MappingNotExist);
     });
 }
