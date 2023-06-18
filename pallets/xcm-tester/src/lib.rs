@@ -36,7 +36,7 @@
 // #[cfg(test)]
 // mod tests;
 
-// mod impls;
+mod impls;
 
 // pub mod weights;
 
@@ -106,14 +106,14 @@ pub mod pallet {
 
         // type WeightInfo: WeightInfo;
 
-        // /// The balance type
-        // type Balance: Parameter
-        //     + Member
-        //     + sp_runtime::traits::AtLeast32BitUnsigned
-        //     + Default
-        //     + Copy
-        //     + MaybeSerializeDeserialize
-        //     + MaxEncodedLen;
+        /// The balance type
+        type Balance: Parameter
+            + Member
+            + sp_runtime::traits::AtLeast32BitUnsigned
+            + Default
+            + Copy
+            + MaybeSerializeDeserialize
+            + MaxEncodedLen;
 
         // type CallOrigin: EnsureOrigin<
         //     Self::RuntimeOrigin,
@@ -161,9 +161,6 @@ pub mod pallet {
         /// Mapping delete has been performed
         /// [Sora AssetId, XCM Multilocation]
         MappingDeleted(AssetId, MultiLocation),
-        /// Asset Added to channel
-        /// [SubstrateAppMessage]
-        // AssetAddedToChannel(SubstrateAppCall),
         /// Asset transfered from this parachain
         /// [From, To, AssedId, amount]
         AssetTransferred(T::AccountId, MultiLocation, AssetId, u128),

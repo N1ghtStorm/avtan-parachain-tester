@@ -30,7 +30,7 @@
 
 use crate::*;
 use frame_support::fail;
-use sp_runtime::traits::Convert;
+// use sp_runtime::traits::Convert;
 
 // IMPLS
 impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
@@ -102,13 +102,11 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
     ) -> sp_runtime::DispatchResult {
         log::trace!(
             target: "xcm::XCMApp",
-            "deposit",
+            "deposit || currency_id: {:?} || who: {:?} || amount: {:?} ||",
+            currency_id, 
+            who,
+            amount,
         );
-        Pallet::<T>::add_to_channel(
-            who.clone(),
-            currency_id,
-            T::BalanceConverter::convert(amount),
-        )?;
         Ok(())
     }
 
