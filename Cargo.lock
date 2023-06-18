@@ -13662,24 +13662,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "xcm-app"
-version = "0.1.0"
-dependencies = [
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "log",
- "orml-traits",
- "parity-scale-codec",
- "scale-info",
- "serde",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "xcm",
-]
-
-[[package]]
 name = "xcm-builder"
 version = "0.9.42"
 source = "git+https://github.com/paritytech/polkadot?branch=release-v0.9.42#9b1fc27cec47f01a2c229532ee7ab79cc5bb28ef"
@@ -13729,6 +13711,24 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.15",
+]
+
+[[package]]
+name = "xcm-tester"
+version = "0.1.0"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "log",
+ "orml-traits",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "xcm",
 ]
 
 [[package]]

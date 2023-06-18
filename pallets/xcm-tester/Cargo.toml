@@ -1,5 +1,5 @@
 [package]
-name = "xcm-app"
+name = "xcm-tester"
 authors = ["Anonymous"]
 description = "FRAME pallet that converts AssetId to Multilocation"
 version = "0.1.0"

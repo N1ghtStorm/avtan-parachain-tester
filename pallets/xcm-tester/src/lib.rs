@@ -200,119 +200,18 @@ pub mod pallet {
 
     #[pallet::call]
     impl<T: Config> Pallet<T> {
-        // #[pallet::call_index(0)]
-        // #[pallet::weight(<T as Config>::WeightInfo::transfer())]
-        // pub fn transfer(
-        //     origin: OriginFor<T>,
-        //     asset_id: AssetId,
-        //     sender: T::AccountId,
-        //     recipient: xcm::VersionedMultiLocation,
-        //     amount: u128,
-        // ) -> DispatchResultWithPostInfo {
-        //     let res = T::CallOrigin::ensure_origin(origin)?;
-        //     frame_support::log::info!(
-        //         "Call transfer with params: {:?} by {:?}",
-        //         (asset_id, sender.clone(), recipient.clone(), amount),
-        //         res
-        //     );
-        //     Self::do_xcm_asset_transfer(asset_id, sender, recipient, amount)?;
-        //     Ok(().into())
-        // }
-
-        // #[pallet::call_index(1)]
-        // #[pallet::weight(<T as Config>::WeightInfo::register_asset())]
-        // pub fn register_asset(
-        //     origin: OriginFor<T>,
-        //     asset_id: AssetId,
-        //     multiasset: xcm::v3::AssetId,
-        //     asset_kind: bridge_types::types::AssetKind,
-        // ) -> DispatchResultWithPostInfo {
-        //     let res = T::CallOrigin::ensure_origin(origin)?;
-        //     frame_support::log::info!(
-        //         "Call register_asset with params: {:?} by {:?}",
-        //         (asset_id, multiasset.clone()),
-        //         res
-        //     );
-        //     let multilocation = match multiasset {
-        //         xcm::v3::AssetId::Concrete(location) => location,
-        //         xcm::v3::AssetId::Abstract(_) => fail!(Error::<T>::WrongXCMVersion),
-        //     };
-
-        //     Self::register_mapping(asset_id, multilocation)?;
-
-        //     T::OutboundChannel::submit(
-        //         SubNetworkId::Mainnet,
-        //         &RawOrigin::Root,
-        //         &SubstrateAppCall::FinalizeAssetRegistration { asset_id, asset_kind }
-        //             .prepare_message(),
-        //         (),
-        //     )?;
-
-        //     Self::deposit_event(Event::<T>::MappingCreated(asset_id, multilocation));
-        //     Ok(().into())
-        // }
-    }
-
-    impl<T: Config> Pallet<T> {
-        // pub fn add_to_channel(
-        //     account_id: T::AccountId,
-        //     asset_id: AssetId,
-        //     amount: u128,
-        // ) -> sp_runtime::DispatchResult {
-        //     let raw_origin = Some(account_id.clone()).into();
-        //     let xcm_mes = SubstrateAppCall::Transfer {
-        //         asset_id,
-        //         recipient: T::AccountIdConverter::convert(account_id),
-        //         sender: None,
-        //         amount,
-        //     };
-        //     let xcm_mes_bytes = xcm_mes.clone().prepare_message();
-        //     if let Err(e) = <T as Config>::OutboundChannel::submit(
-        //         SubNetworkId::Mainnet,
-        //         &raw_origin,
-        //         &xcm_mes_bytes,
-        //         (),
-        //     ) {
-        //         Self::deposit_event(Event::<T>::SubmittingToChannelError(e, asset_id));
-        //         return Err(e);
-        //     }
-        //     Self::deposit_event(Event::<T>::AssetAddedToChannel(xcm_mes));
-        //     Ok(())
-        // }
-
-        // pub fn do_xcm_asset_transfer(
-        //     asset_id: AssetId,
-        //     sender: T::AccountId,
-        //     recipient: xcm::VersionedMultiLocation,
-        //     amount: u128,
-        // ) -> sp_runtime::DispatchResult {
-        //     let recipient = match recipient {
-        //         xcm::VersionedMultiLocation::V3(m) => m,
-        //         _ => fail!(Error::<T>::WrongXCMVersion),
-        //     };
-        //     if let Err(e) = <T as Config>::XcmTransfer::transfer(
-        //         sender.clone(),
-        //         asset_id,
-        //         amount,
-        //         recipient.clone(),
-        //         xcm::v3::WeightLimit::Unlimited,
-        //     ) {
-        //         Self::deposit_event(Event::<T>::TrasferringAssetError(e, asset_id));
-        //         return Err(e);
-        //     }
-
-        //     Self::deposit_event(Event::<T>::AssetTransferred(sender, recipient, asset_id, amount));
-        //     Ok(())
-        // }
-
         /// Perform registration for mapping of an AssetId <-> Multilocation
         ///
         /// - `asset_id`: asset id in Sora Network,
         /// - `multilocation`: XCM multilocation of an asset,
+        #[pallet::call_index(0)]
+        #[pallet::weight(Weight::from_parts(10_000, 0) + T::DbWeight::get().writes(1))]
         pub fn register_mapping(
+            origin: OriginFor<T>,
             asset_id: AssetId,
             multilocation: MultiLocation,
         ) -> DispatchResultWithPostInfo {
+            ensure_root(origin)?;
             ensure!(
                 AssetIdToMultilocation::<T>::get(asset_id).is_none()
                     && MultilocationToAssetId::<T>::get(multilocation.clone()).is_none(),
@@ -327,10 +226,14 @@ pub mod pallet {
         ///
         /// - `asset_id`: asset id in Sora Network,
         /// - `new_multilocation`: new XCM multilocation of an asset,
+        #[pallet::call_index(1)]
+        #[pallet::weight(Weight::from_parts(10_000, 0) + T::DbWeight::get().writes(1))]
         pub fn change_asset_mapping(
+            origin: OriginFor<T>,
             asset_id: AssetId,
             new_multilocation: MultiLocation,
         ) -> DispatchResultWithPostInfo {
+            ensure_root(origin)?;
             AssetIdToMultilocation::<T>::try_mutate(asset_id, |ml_opt| -> DispatchResult {
                 match ml_opt {
                     None => fail!(Error::<T>::MappingNotExist),
@@ -358,10 +261,14 @@ pub mod pallet {
         ///
         /// - `multilocation`: XCM multilocation of an asset,
         /// - `new_asset_id`: new asset id in Sora Network,
+        #[pallet::call_index(2)]
+        #[pallet::weight(Weight::from_parts(10_000, 0) + T::DbWeight::get().writes(1))]
         pub fn change_multilocation_mapping(
+            origin: OriginFor<T>,
             multilocation: MultiLocation,
             new_asset_id: AssetId,
         ) -> DispatchResultWithPostInfo {
+            ensure_root(origin)?;
             MultilocationToAssetId::<T>::try_mutate(
                 multilocation.clone(),
                 |asset_opt| -> DispatchResult {
@@ -398,7 +305,10 @@ pub mod pallet {
         /// Perform delete of mapping of an AssetId -> Multilocation
         ///
         /// - `asset_id`: asset id in Sora Network,
-        pub fn delete_mapping(asset_id: AssetId) -> DispatchResultWithPostInfo {
+        #[pallet::call_index(3)]
+        #[pallet::weight(Weight::from_parts(10_000, 0) + T::DbWeight::get().writes(1))]
+        pub fn delete_mapping(origin: OriginFor<T>, asset_id: AssetId) -> DispatchResultWithPostInfo {
+            ensure_root(origin)?;
             match AssetIdToMultilocation::<T>::get(asset_id) {
                 None => fail!(Error::<T>::MappingNotExist),
                 Some(multilocation) => {
@@ -410,4 +320,6 @@ pub mod pallet {
             Ok(().into())
         }
     }
+
+    impl<T: Config> Pallet<T> {}
 }
