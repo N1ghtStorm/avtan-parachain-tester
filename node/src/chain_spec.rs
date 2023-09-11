@@ -117,7 +117,7 @@ pub fn development_config() -> ChainSpec {
                     get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
                     get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
                 ],
-                2666.into(),
+                2000.into(),
                 get_account_id_from_seed::<sr25519::Public>("Alice"),
             )
         },
@@ -128,7 +128,7 @@ pub fn development_config() -> ChainSpec {
         None,
         Extensions {
             relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
-            para_id: 2666,
+            para_id: 2000,
         },
     )
 }
@@ -173,7 +173,7 @@ pub fn local_testnet_config() -> ChainSpec {
                     get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
                     get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
                 ],
-                2666.into(),
+                2000.into(),
                 get_account_id_from_seed::<sr25519::Public>("Alice"),
             )
         },
@@ -190,7 +190,7 @@ pub fn local_testnet_config() -> ChainSpec {
         // Extensions
         Extensions {
             relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
-            para_id: 2666,
+            para_id: 2000,
         },
     )
 }

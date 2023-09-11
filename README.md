@@ -19,22 +19,22 @@
 
 # Generate chainspec and wasm validation code:
 
-<!-- ./target/release/avtan-node build-spec --disable-default-bootnode > rococo-local-parachain-plain.json
-./target/release/avtan-node build-spec --chain rococo-local-parachain-plain.json --raw --disable-default-bootnode > rococo-local-parachain-2666-raw.json
+./target/release/parachain-tester build-spec --disable-default-bootnode > rococo-local-parachain-plain.json
+./target/release/parachain-tester build-spec --chain rococo-local-parachain-plain.json --raw --disable-default-bootnode > rococo-local-parachain-2000-raw.json
 
-./target/release/avtan-node  export-genesis-wasm --chain rococo-local-parachain-2666-raw.json > para-2666-wasm
-./target/release/avtan-node  export-genesis-state --chain rococo-local-parachain-2666-raw.json > para-2666-genesis -->
+./target/release/parachain-tester  export-genesis-wasm --chain rococo-local-parachain-2000-raw.json > para-2000-wasm
+./target/release/parachain-tester  export-genesis-state --chain rococo-local-parachain-2000-raw.json > para-2000-genesis
 
 # Start Node
 
-<!-- rm -rf /tmp/parachain/avtan-parachain-alice
+rm -rf /tmp/parachain/parachain-tester-alice
 
-./target/release/avtan-node \
+./target/release/parachain-tester \
 --alice \
 --collator \
 --force-authoring \
---chain rococo-local-parachain-2666-raw.json \
---base-path /tmp/parachain/avtan-parachain-alice \
+--chain rococo-local-parachain-2000-raw.json \
+--base-path /tmp/parachain/parachain-tester-alice \
 --port 50534 \
 --ws-port 18866 \
 --pruning=archive --enable-offchain-indexing true \
@@ -42,4 +42,4 @@
 --execution wasm \
 --chain ../polkadot/rococo_local_raw.json \
 --port 30355 \
---ws-port 19979 -->
+--ws-port 19979
